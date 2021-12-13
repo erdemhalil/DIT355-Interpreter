@@ -9,39 +9,44 @@ client.on("connect", e => {
     console.log("connected")
     client.subscribe("/dentistimo/#", e => {
         client.on("message", (topic, m) => {
-            let message = JSON.parse(m)
-            if(message.request === 'post'){
-                postRequest(message.url, JSON.parse(message.data)).then(data => {
-                    let response = {"id": message.id, "data": data}
-                    client.publish(topic, JSON.stringify(response))
-                })
-            } else if(message.request === 'get'){
-                getRequest(message.url).then(data => {
-                    let response = {"id": message.id, "data": data} 
-                    client.publish(topic, JSON.stringify(response))
-                })
-            } 
-            console.log(message)
+            try {
+                let message = JSON.parse(m)
+                if (message.request === 'post') {
+                    postRequest(message.url, JSON.parse(message.data)).then(data => {
+                        let response = { "id": message.id, "data": data }
+                        client.publish(topic, JSON.stringify(response))
+                    })
+                } else if (message.request === 'get') {
+                    getRequest(message.url).then(data => {
+                        let response = { "id": message.id, "data": data }
+                        client.publish(topic, JSON.stringify(response))
+                    })
+                }
+                console.log(message)
+            } catch (e) {
+                let response = { "id": topic.split('/').pop(), "data": "400 Bad Request" }
+                client.publish(topic, JSON.stringify(response))
+            }
         })
     })
 })
 
-async function getRequest(url){
+async function getRequest(url) {
     let data = {}
     await Api.get(url).then(response => {
         data = response.data
     }).catch(e => {
-        data = {"error": e.response.status + " " + e.response.statusText}
+        data = { "error": e.response.status + " " + e.response.statusText }
     })
     return data
 }
 
-async function postRequest(url, data){
+async function postRequest(url, data) {
     let res = {}
     await Api.post(url, data).then(response => {
-        res = response.data
+        res = { "status": response.status + " " + response.statusText, "data": response.data }
     }).catch(e => {
-        res = {"error": e.response.status + " " + e.response.statusText}
+        res = { "error": e.response.status + " " + e.response.statusText }
     })
     return res
 }
