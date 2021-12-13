@@ -1,5 +1,9 @@
+const axios = require("axios")
 const mqtt = require("mqtt")
 const client = mqtt.connect("mqtt://localhost:1883/")
+const Api = axios.create({
+    baseURL: 'http://localhost:8000/api'
+})
 
 client.on("connect", e => {
     console.log("connected")
@@ -11,21 +15,24 @@ client.on("connect", e => {
                 let response = {"id": message.id, "message": "data"}
                 client.publish(topic, JSON.stringify(response))
             } else if(message.request === 'get'){
-                console.log("get", message.message)
+                getRequest(message.url).then(data => {
+                    let response = {"id": message.id, "data": data} 
+                    client.publish(topic, JSON.stringify(response))
+                })
             } 
             console.log(message)
         })
     })
 })
 
-
-
-
-function getRequest(url){
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open( "GET", url, false ); // false for synchronous request
-    xmlHttp.send( null );
-    return xmlHttp.responseText;
+async function getRequest(url){
+    let data = {}
+    await Api.get(url).then(response => {
+        data = response.data
+    }).catch(e => {
+        data = {"error": "404 Page Not Found"}
+    })
+    return data
 }
 
 function postRequest(url, data){
