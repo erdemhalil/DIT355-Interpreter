@@ -11,9 +11,10 @@ client.on("connect", e => {
         client.on("message", (topic, m) => {
             let message = JSON.parse(m)
             if(message.request === 'post'){
-                console.log("post", message.message)
-                let response = {"id": message.id, "message": "data"}
-                client.publish(topic, JSON.stringify(response))
+                postRequest(message.url, JSON.parse(message.data)).then(data => {
+                    let response = {"id": message.id, "data": data}
+                    client.publish(topic, JSON.stringify(response))
+                })
             } else if(message.request === 'get'){
                 getRequest(message.url).then(data => {
                     let response = {"id": message.id, "data": data} 
@@ -30,16 +31,17 @@ async function getRequest(url){
     await Api.get(url).then(response => {
         data = response.data
     }).catch(e => {
-        data = {"error": "404 Page Not Found"}
+        data = {"error": e.response.status + " " + e.response.statusText}
     })
     return data
 }
 
-function postRequest(url, data){
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("POST", url, true);
-    xmlHttp.setRequestHeader('Content-Type', 'application/json');
-    xmlHttp.send(data);
-    return xmlHttp.responseText;
+async function postRequest(url, data){
+    let res = {}
+    await Api.post(url, data).then(response => {
+        res = response.data
+    }).catch(e => {
+        res = {"error": e.response.status + " " + e.response.statusText}
+    })
+    return res
 }
-//axios
