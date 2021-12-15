@@ -22,12 +22,7 @@ client.on("connect", e => {
                             let response = { "id": message.id, "data": data }
                             client.publish(topic, JSON.stringify(response))
                         })
-                    } else if (message.confirm === "received"){
-                        console.log("a")
-                        client.unsubscribe(topic)
-                        client.publish(topic, "")
                     }
-                    console.log(message)
                 } catch (e) {
                     let response = { "id": topic.split('/').pop(), "data": "400 Bad Request" }
                     client.publish(topic, JSON.stringify(response))
