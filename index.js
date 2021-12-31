@@ -5,11 +5,9 @@ const Api = axios.create({
     baseURL: 'http://localhost:8000/api'
 })
 
-var  options = { qos: 1 }
-
 client.on("connect", e => {
     console.log("connected")
-    client.subscribe("/dentistimo/#", {qos: 1},e => {
+    client.subscribe("/dentistimo/#", {qos:1},e => {
         client.on("message", (topic, m, option) => {
             if (m.length !== 0){
                 try {
@@ -17,17 +15,18 @@ client.on("connect", e => {
                     if (message.request === 'post') {
                         postRequest(message.url, message.data).then(data => {
                             let response = { "id": message.id, "response": "response", "data": data }
-                            return client.publish(topic, JSON.stringify(response), qos=1)
+                            return client.publish(topic, JSON.stringify(response), {qos:1})
                         })
                     } else if (message.request === 'get') {
                         getRequest(message.url).then(data => {
                             let response = { "id": message.id, "response": "response", "data": data }
-                            return client.publish(topic, JSON.stringify(response), qos=1)
+                            return client.publish(topic, JSON.stringify(response), {qos:1})
                         })
                     }
+                    console.log(option)
                 } catch (e) {
                     let response = { "id": topic.split('/').pop(), "response": "response", "data": "400 Bad Requests" }
-                    return client.publish(topic, JSON.stringify(response), qos=1)
+                    return client.publish(topic, JSON.stringify(response), {qos:1})
                 }
             } 
         })
