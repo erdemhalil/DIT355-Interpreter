@@ -7,25 +7,26 @@ const Api = axios.create({
 
 client.on("connect", e => {
     console.log("connected")
-    client.subscribe("/dentistimo/#", e => {
-        client.on("message", (topic, m) => {
+    client.subscribe("/dentistimo/#", {qos:1},e => {
+        client.on("message", (topic, m, option) => {
             if (m.length !== 0){
                 try {
-                    let message = JSON.parse(m)
+                    let message = JSON.parse(m.toString())
                     if (message.request === 'post') {
-                        postRequest(message.url, JSON.parse(message.data)).then(data => {
-                            let response = { "id": message.id, "data": data }
-                            client.publish(topic, JSON.stringify(response))
+                        postRequest(message.url, message.data).then(data => {
+                            let response = { "id": message.id, "response": "response", "data": data }
+                            return client.publish(topic, JSON.stringify(response), {qos:1})
                         })
                     } else if (message.request === 'get') {
                         getRequest(message.url).then(data => {
-                            let response = { "id": message.id, "data": data }
-                            client.publish(topic, JSON.stringify(response))
+                            let response = { "id": message.id, "response": "response", "data": data }
+                            return client.publish(topic, JSON.stringify(response), {qos:1})
                         })
                     }
+                    console.log(option)
                 } catch (e) {
-                    let response = { "id": topic.split('/').pop(), "data": "400 Bad Request" }
-                    client.publish(topic, JSON.stringify(response))
+                    let response = { "id": topic.split('/').pop(), "response": "response", "data": "400 Bad Requests" }
+                    return client.publish(topic, JSON.stringify(response), {qos:1})
                 }
             } 
         })
