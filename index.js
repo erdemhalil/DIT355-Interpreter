@@ -13,12 +13,12 @@ client.on("connect", e => {
                 try {
                     let message = JSON.parse(m.toString())
                     if (message.request === 'post') {
-                        postRequest(message.url, message.data).then(data => {
+                        postRequest(message.url, message.data, message.data.Authorization).then(data => {
                             let response = { "id": message.id, "response": "response", "data": data }
                             return client.publish(topic, JSON.stringify(response), {qos:1})
                         })
                     } else if (message.request === 'get') {
-                        getRequest(message.url).then(data => {
+                        getRequest(message.url, message.data.Authorization).then(data => {
                             let response = { "id": message.id, "response": "response", "data": data }
                             return client.publish(topic, JSON.stringify(response), {qos:1})
                         })
@@ -33,9 +33,9 @@ client.on("connect", e => {
     })
 })
 
-async function getRequest(url) {
+async function getRequest(url, Autho) {
     let data = {}
-    await Api.get(url).then(response => {
+    await Api.get(url, {headers: {Authorization: 'Bearer ' + Autho}}).then(response => {
         data = response.data
     }).catch(e => {
         data = { "error": e.response.status + " " + e.response.statusText }
@@ -43,9 +43,9 @@ async function getRequest(url) {
     return data
 }
 
-async function postRequest(url, data) {
+async function postRequest(url, data, Autho) {
     let res = {}
-    await Api.post(url, data).then(response => {
+    await Api.post(url, data, {headers: {Authorization: 'Bearer ' + Autho}}).then(response => {
         res = { "status": response.status + " " + response.statusText, "data": response.data }
     }).catch(e => {
         res = { "error": e.response.status + " " + e.response.statusText }
