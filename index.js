@@ -35,20 +35,38 @@ client.on("connect", e => {
 
 async function getRequest(url, Autho) {
     let data = {}
-    await Api.get(url, {headers: {Authorization: 'Bearer ' + Autho}}).then(response => {
-        data = response.data
-    }).catch(e => {
-        data = { "error": e.response.status + " " + e.response.statusText }
-    })
-    return data
+    if(Autho != undefined){
+        await Api.get(url, {headers: {Authorization: 'Bearer ' + Autho}}).then(response => {
+            data = response.data
+        }).catch(e => {
+            data = { "error": e.response.status + " " + e.response.statusText }
+        })
+        return data
+    } else {
+        await Api.get(url).then(response => {
+            data = response.data
+        }).catch(e => {
+            data = { "error": e.response.status + " " + e.response.statusText }
+        })
+        return data
+    }
 }
 
 async function postRequest(url, data, Autho) {
     let res = {}
-    await Api.post(url, data, {headers: {Authorization: 'Bearer ' + Autho}}).then(response => {
-        res = { "status": response.status + " " + response.statusText, "data": response.data }
-    }).catch(e => {
-        res = { "error": e.response.status + " " + e.response.statusText }
-    })
-    return res
+    if(Autho != undefined){
+        await Api.post(url, data, {headers: {Authorization: 'Bearer ' + Autho}}).then(response => {
+            res = { "status": response.status + " " + response.statusText, "data": response.data }
+        }).catch(e => {
+            res = { "error": e.response.status + " " + e.response.statusText }
+        })
+        return res
+    } else {
+        await Api.post(url, data).then(response => {
+            res = { "status": response.status + " " + response.statusText, "data": response.data }
+        }).catch(e => {
+            res = { "error": e.response.status + " " + e.response.statusText }
+        })
+        return res
+    }
 }
