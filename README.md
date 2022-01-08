@@ -7,7 +7,7 @@ For more detailed information of the component and the whole system head over to
 ## Setup Instructions
 
 ### Prerequisites 
-To run this server you will need Node and MQTT installed on your computer.
+To run the Interpreter you will need Node and MQTT installed on your computer.
 
 You can install them by clicking on the according option below (you'll be redirected to a third-party web page):
 - [Node](https://nodejs.org/en/download/)
